@@ -1,9 +1,34 @@
-import React from "react";
-import { useQuery } from "@apollo/client";
-import { ALL_AUTHORS } from "../queries";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@apollo/client";
+import { ALL_AUTHORS, EDIT_AUTHOR } from "../queries";
 
 const Authors = ({ show }) => {
   const { loading, data } = useQuery(ALL_AUTHORS);
+  const [name, setName] = useState("");
+  const [born, setBorn] = useState("");
+  const [editAuthor, { data: editAuthorData }] = useMutation(EDIT_AUTHOR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
+    onError: ({ networkError }) => {
+      if (networkError) {
+        console.log("Edit author mutation error:", networkError.result.errors);
+      }
+    },
+  });
+
+  const handleSetBirthYear = (event) => {
+    event.preventDefault();
+
+    editAuthor({ variables: { name, born: parseInt(born) } });
+
+    setName("");
+    setBorn("");
+  };
+
+  useEffect(() => {
+    if (editAuthorData && editAuthorData.editAuthor === null) {
+      console.error("Author not found");
+    }
+  }, [editAuthorData]);
 
   if (!show) {
     return null;
@@ -28,6 +53,25 @@ const Authors = ({ show }) => {
           ))}
         </tbody>
       </table>
+
+      <h2>Set birthyear</h2>
+      <form onSubmit={handleSetBirthYear}>
+        <select value={name} onChange={({ target }) => setName(target.value)}>
+          {data.allAuthors.map((a) => (
+            <option key={a.name} value={a.name}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+        <div>
+          born
+          <input
+            value={born}
+            onChange={({ target }) => setBorn(target.value)}
+          />
+        </div>
+        <button type="submit">update author</button>
+      </form>
     </div>
   );
 };
