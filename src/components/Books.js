@@ -1,10 +1,7 @@
 import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
-import { ALL_BOOKS } from "../queries";
 import GenreFilter from "./GenreFilter";
 
-const Books = ({ show }) => {
-  const { loading, data } = useQuery(ALL_BOOKS);
+const Books = ({ show, books }) => {
   const [filter, setFilter] = useState("");
 
   if (!show) {
@@ -12,9 +9,8 @@ const Books = ({ show }) => {
   }
 
   const filteredBooks = () => {
-    let books = data.allBooks;
     if (filter) {
-      books = data.allBooks.filter((b) => b.genres.includes(filter));
+      books = books.filter((b) => b.genres.includes(filter));
     }
 
     return books.map((b) => (
@@ -26,9 +22,13 @@ const Books = ({ show }) => {
     ));
   };
 
-  return loading ? null : (
+  return (
     <div>
       <h2>books</h2>
+
+      <p>
+        in genre <b>{filter}</b>
+      </p>
 
       <table>
         <tbody>
