@@ -3,7 +3,11 @@ import { useQuery, useMutation } from "@apollo/client";
 import { ALL_AUTHORS, EDIT_AUTHOR } from "../queries";
 
 const Authors = ({ show }) => {
-  const { loading, data } = useQuery(ALL_AUTHORS);
+  const { loading, data } = useQuery(ALL_AUTHORS, {
+    onCompleted: (data) => {
+      setName(data.allAuthors[0].name);
+    },
+  });
   const [name, setName] = useState("");
   const [born, setBorn] = useState("");
   const [editAuthor, { data: editAuthorData }] = useMutation(EDIT_AUTHOR, {
@@ -17,9 +21,7 @@ const Authors = ({ show }) => {
 
   const handleSetBirthYear = (event) => {
     event.preventDefault();
-
     editAuthor({ variables: { name, born: parseInt(born) } });
-
     setName("");
     setBorn("");
   };
