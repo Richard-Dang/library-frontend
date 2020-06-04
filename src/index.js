@@ -7,9 +7,12 @@ import {
   ApolloLink,
   InMemoryCache,
   ApolloProvider,
+  split,
 } from "@apollo/client";
 import { onError } from "apollo-link-error";
 import { setContext } from "apollo-link-context";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { WebSocketLink } from "@apollo/link-ws";
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
@@ -31,7 +34,22 @@ const httpLink = new HttpLink({
   uri: "http://localhost:4000",
 });
 
-const link = ApolloLink.from([errorLink, authLink, httpLink]);
+const wsLink = new WebSocketLink({
+  uri: `ws://localhost:4000/graphql`,
+  options: { reconnect: true },
+});
+
+const link = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLink,
+  ApolloLink.from([errorLink, authLink, httpLink])
+);
 
 const client = new ApolloClient({
   cache: new InMemoryCache(),

@@ -6,6 +6,7 @@ export const ALL_AUTHORS = gql`
       name
       born
       numBooks
+      id
     }
   }
 `;
@@ -19,6 +20,7 @@ export const ALL_BOOKS = gql`
       author {
         name
       }
+      id
     }
   }
 `;
@@ -73,6 +75,20 @@ export const FAVORITE_GENRE = gql`
   query me {
     me {
       favoriteGenre
+    }
+  }
+`;
+
+export const BOOK_ADDED = gql`
+  subscription bookAdded {
+    bookAdded {
+      title
+      author {
+        name
+      }
+      published
+      genres
+      id
     }
   }
 `;

@@ -4,9 +4,9 @@ import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import Login from "./components/Login";
 import Recommend from "./components/Recommend";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient, useSubscription } from "@apollo/client";
 import { useQuery } from "@apollo/client";
-import { ALL_BOOKS } from "./queries";
+import { ALL_BOOKS, BOOK_ADDED } from "./queries";
 
 const App = () => {
   const [page, setPage] = useState("authors");
@@ -22,6 +22,24 @@ const App = () => {
     client.resetStore();
     setPage("login");
   };
+
+  const updateCache = (book) => {
+    const storeData = client.readQuery({ query: ALL_BOOKS });
+    if (!storeData.allBooks.map((b) => b.id).includes(book.id)) {
+      client.writeQuery({
+        query: ALL_BOOKS,
+        data: { allBooks: storeData.allBooks.concat(book) },
+      });
+    }
+  };
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const book = subscriptionData.data.bookAdded;
+      window.alert(`New book added: ${book.title} by ${book.author.name}`);
+      updateCache(book);
+    },
+  });
 
   return loading ? null : (
     <div>
@@ -44,7 +62,6 @@ const App = () => {
       <Books show={page === "books"} books={data.allBooks} />
 
       <Login show={page === "login"} setToken={setToken} setPage={setPage} />
-      
 
       <NewBook show={page === "add"} />
 

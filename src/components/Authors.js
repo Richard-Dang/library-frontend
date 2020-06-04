@@ -5,7 +5,9 @@ import { ALL_AUTHORS, EDIT_AUTHOR } from "../queries";
 const Authors = ({ show }) => {
   const { loading, data } = useQuery(ALL_AUTHORS, {
     onCompleted: (data) => {
-      setName(data.allAuthors[0].name);
+      if (data.allAuthors[0]) {
+        setName(data.allAuthors[0].name);
+      }
     },
   });
   const [name, setName] = useState("");
@@ -50,7 +52,7 @@ const Authors = ({ show }) => {
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>
-              <td>{a.bookCount}</td>
+              <td>{a.numBooks}</td>
             </tr>
           ))}
         </tbody>
